@@ -1,4 +1,6 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: *** No rule to make target 'all'.  Stop.
+
 # GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2016 Free Software Foundation, Inc.
@@ -6,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Jul 21 16:19:04 2022
+# Make data base, printed on Mon Jul 25 10:10:58 2022
 
 # Variables
 
@@ -55,7 +57,7 @@ GOPATH = /home/singgih/go
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-1fc9c1ce-c733-4273-8584-0e8c5ac8aa4e.sock
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-b40156dd-04a0-47a8-8277-11647381400b.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -153,9 +155,9 @@ MOTD_SHOWN = update-motd
 
 # Directories
 
-# . (device 2064, inode 244389): 11 files, no impossibilities.
+# . (device 2064, inode 244389): 14 files, no impossibilities.
 
-# 11 files, no impossibilities in 1 directories.
+# 14 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -168,8 +170,8 @@ mockfile:
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'makefile', line 2):
-	@mockgen -source=src/repo/pubsubRepo.go -destination=src/mock/pubsubRepo.go
-	@mockgen -source=src/services/pubsubService.go -destination=src/mock/pubsubService.go
+	@mockgen -package=mocks -source=src/repo/pubsubRepo.go -destination=src/mocks/pubsubRepo_mock.go
+	@mockgen -package=mocks -source=src/services/pubsubService.go -destination=src/mocks/pubsubService_mock.go
 
 # Not a target:
 all:
@@ -181,7 +183,7 @@ all:
 # Not a target:
 makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-21 16:15:15.435215137
+#  Last modified 2022-07-21 16:47:41.495244567
 #  File has been updated.
 #  Successfully updated.
 
@@ -199,14 +201,12 @@ makefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 17 / storage = 140 B / avg = 8 B
-# current buf: size = 8162 B / used = 140 B / count = 17 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 20 / storage = 180 B / avg = 9 B
+# current buf: size = 8162 B / used = 180 B / count = 20 / avg = 9 B
 
-# strcache performance: lookups = 22 / hit rate = 22%
+# strcache performance: lookups = 25 / hit rate = 20%
 # hash-table stats:
-# Load=17/8192=0%, Rehash=0, Collisions=1/22=5%
-# Finished Make data base on Thu Jul 21 16:19:04 2022
+# Load=20/8192=0%, Rehash=0, Collisions=1/25=4%
+# Finished Make data base on Mon Jul 25 10:10:58 2022
 
  
-make: *** No rule to make target 'all'.  Stop.
-

@@ -1,6 +1,6 @@
 make --dry-run --always-make --keep-going --print-directory
 make: Entering directory '/home/singgih/go/pubRepo/pubsub-cases'
-mockgen -source=src/repo/pubsubRepo.go -destination=src/mock/pubsubRepo.go
-mockgen -source=src/services/pubsubService.go -destination=src/mock/pubsubService.go
+mockgen -package=mocks -source=src/repo/pubsubRepo.go -destination=src/mocks/pubsubRepo_mock.go
+mockgen -package=mocks -source=src/services/pubsubService.go -destination=src/mocks/pubsubService_mock.go
 make: Leaving directory '/home/singgih/go/pubRepo/pubsub-cases'
  
