@@ -24,7 +24,7 @@ type pubsubRepoSuite struct {
 }
 
 func (s *pubsubRepoSuite) SetupSuite() {
-	gac := "keyPubSub.json"
+	gac := "../../keyPubSub.json"
 	pid := "propane-galaxy-168212"
 	tid := "hello-pubsub"
 	s.subs = "hello-pubsub-sub"
@@ -42,13 +42,21 @@ func (s *pubsubRepoSuite) TearDownSuite() {
 
 }
 func TestIntegrationPubSub(t *testing.T) {
-	// create an instance of our test object
 	suite.Run(t, new(pubsubRepoSuite))
 }
 func (s *pubsubRepoSuite) TestConcurrent() {
+	// res1 := []string{`{"code":0,"message":"Berhasil","data":"nil"}`, `{"code":1,"message":"Berhasil","data":"nil"}`, `{"code":2,"message":"Berhasil","data":"nil"}`, `{"code":3,"message":"Berhasil","data":"nil"}`, `{"code":4,"message":"Berhasil","data":"nil"}`}
+	// res1 := map[int]int{
+	// 	0: 5,
+	// 	1: 5,
+	// 	2: 5,
+	// 	3: 5,
+	// 	4: 5,
+	// }
 	testTable := []struct {
-		name string
-		sut  func() error
+		name       string
+		wantResult interface{}
+		sut        func() error
 	}{
 		{
 			name: "Publish",
@@ -60,23 +68,9 @@ func (s *pubsubRepoSuite) TestConcurrent() {
 				}
 				for i := 0; i < 5; i++ {
 					wg.Add(1)
-					go func(swg *sync.WaitGroup, iteration int) (err error) {
-						defer swg.Done()
-						param.Code = iteration
-						data, _ := json.Marshal(param)
-						jsonString := string(data)
-						// publishing 5 right format messages
-						err = s.pubsubRepo.PublishMessage(context.Background(), jsonString)
-						return
-					}(wg, i)
-
+					go rightMessage(wg, param, i, s) // publishing right format messages
 					wg.Add(1)
-					go func(swg *sync.WaitGroup, iteration int) (err error) {
-						defer swg.Done()
-						// publishing 5 wrong format messages
-						err = s.pubsubRepo.PublishMessage(context.Background(), fmt.Sprintf("Hello world %d", iteration))
-						return
-					}(wg, i)
+					go wrongMessage(wg, i, s) // publishing wrong format messages
 				}
 				wg.Wait()
 				return
@@ -91,23 +85,14 @@ func (s *pubsubRepoSuite) TestConcurrent() {
 						SubscriberId: s.subsDL,
 						Concurrency:  1,
 						Handler: func(ctx context.Context, message *pubsub.Message) {
-							fmt.Printf("%s : Ack-ing %s\n", s.subsDL, string(message.Data))
-							message.Ack()
+							ackDeadLetterSub(s, message)
 						},
 					},
 					{
 						SubscriberId: s.subs,
 						Concurrency:  1,
 						Handler: func(ctx context.Context, message *pubsub.Message) {
-							param := models.PubSubModels{}
-							err := json.Unmarshal(message.Data, &param)
-							if err != nil {
-								fmt.Printf("%s : Fail Consuming %s\n", s.subs, string(message.Data))
-								message.Nack()
-								return
-							}
-							fmt.Printf("%s : Success Consuming %s\n", s.subs, string(message.Data))
-							message.Ack()
+							ackMainSub(message, s)
 						},
 					},
 				}
@@ -125,10 +110,96 @@ func (s *pubsubRepoSuite) TestConcurrent() {
 				return
 			},
 		},
+		{
+			name: "PublishingWhileSubscribing",
+			sut: func() (err error) {
+				wg := &sync.WaitGroup{}
+				subs := []models.SubscriberConfig{
+					{
+						SubscriberId: s.subsDL,
+						Concurrency:  1,
+						Handler: func(ctx context.Context, message *pubsub.Message) {
+							ackDeadLetterSub(s, message)
+						},
+					},
+					{
+						SubscriberId: s.subs,
+						Concurrency:  1,
+						Handler: func(ctx context.Context, message *pubsub.Message) {
+							ackMainSub(message, s)
+						},
+					},
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+				defer cancel()
+				for _, sub := range subs {
+					wg.Add(1)
+					go func(swg *sync.WaitGroup, cfg models.SubscriberConfig) error {
+						defer swg.Done()
+						err = s.pubsubRepo.PullMessage(ctx, cfg)
+						return err
+					}(wg, sub)
+				}
+
+				param := models.PubSubModels{
+					Message: "Berhasil",
+					Data:    "nil",
+				}
+				for i := 0; i < 5; i++ {
+					wg.Add(1)
+					go rightMessage(wg, param, i, s) // publishing right format messages
+					wg.Add(1)
+					go wrongMessage(wg, i, s) // publishing wrong format messages
+				}
+
+				wg.Wait()
+				return
+			},
+		},
 	}
 	for _, tests := range testTable {
 		s.Run(tests.name, func() {
 			s.NoError(tests.sut())
 		})
 	}
+}
+
+func ackMainSub(message *pubsub.Message, s *pubsubRepoSuite) {
+	param := models.PubSubModels{}
+	err := json.Unmarshal(message.Data, &param)
+	if err != nil {
+		fmt.Printf("%s : Fail Consuming %s\n", s.subs, string(message.Data))
+		message.Nack()
+		return
+	}
+	fmt.Printf("%s : Success Consuming %s\n", s.subs, string(message.Data))
+	message.Ack()
+}
+
+func ackDeadLetterSub(s *pubsubRepoSuite, message *pubsub.Message) {
+	fmt.Printf("%s : Ack-ing %s\n", s.subsDL, string(message.Data))
+	message.Ack()
+}
+
+func wrongMessage(swg *sync.WaitGroup, iteration int, s *pubsubRepoSuite) (err error) {
+	defer swg.Done()
+
+	data := fmt.Sprintf("Hello world %d", iteration)
+	err = s.pubsubRepo.PublishMessage(context.Background(), data)
+	if err == nil {
+		fmt.Printf("Published a message : %v\n", data)
+	}
+	return
+}
+
+func rightMessage(swg *sync.WaitGroup, param models.PubSubModels, iteration int, s *pubsubRepoSuite) (err error) {
+	defer swg.Done()
+	param.Code = iteration
+	data, _ := json.Marshal(param)
+
+	err = s.pubsubRepo.PublishMessage(context.Background(), string(data))
+	if err == nil {
+		fmt.Printf("Published a message : %v\n", string(data))
+	}
+	return
 }

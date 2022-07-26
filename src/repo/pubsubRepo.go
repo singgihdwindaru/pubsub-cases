@@ -2,7 +2,6 @@ package repo
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"pubsub-cases/src/models"
 
@@ -45,10 +44,9 @@ func (p *pubsubRepo) PublishMessage(ctx context.Context, message interface{}) er
 		Data: []byte(message.(string)),
 	})
 
-	id, err := result.Get(ctx)
+	_, err := result.Get(ctx)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Published a message; msg ID: %v\n", id)
 	return nil
 }
