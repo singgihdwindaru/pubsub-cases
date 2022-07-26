@@ -6,6 +6,7 @@ package mocks
 
 import (
 	context "context"
+	models "pubsub-cases/src/models"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -46,4 +47,18 @@ func (m *MockIPubSubRepo) PublishMessage(ctx context.Context, message interface{
 func (mr *MockIPubSubRepoMockRecorder) PublishMessage(ctx, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishMessage", reflect.TypeOf((*MockIPubSubRepo)(nil).PublishMessage), ctx, message)
+}
+
+// PullMessage mocks base method.
+func (m *MockIPubSubRepo) PullMessage(ctx context.Context, config models.SubscriberConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PullMessage", ctx, config)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PullMessage indicates an expected call of PullMessage.
+func (mr *MockIPubSubRepoMockRecorder) PullMessage(ctx, config interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PullMessage", reflect.TypeOf((*MockIPubSubRepo)(nil).PullMessage), ctx, config)
 }

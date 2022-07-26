@@ -5,6 +5,8 @@
 package mocks
 
 import (
+	context "context"
+	models "pubsub-cases/src/models"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,29 +36,29 @@ func (m *MockIPubsubService) EXPECT() *MockIPubsubServiceMockRecorder {
 }
 
 // PublishMsg mocks base method.
-func (m *MockIPubsubService) PublishMsg() error {
+func (m *MockIPubsubService) PublishMsg(ctx context.Context, message string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishMsg")
+	ret := m.ctrl.Call(m, "PublishMsg", ctx, message)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PublishMsg indicates an expected call of PublishMsg.
-func (mr *MockIPubsubServiceMockRecorder) PublishMsg() *gomock.Call {
+func (mr *MockIPubsubServiceMockRecorder) PublishMsg(ctx, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishMsg", reflect.TypeOf((*MockIPubsubService)(nil).PublishMsg))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishMsg", reflect.TypeOf((*MockIPubsubService)(nil).PublishMsg), ctx, message)
 }
 
 // PullMsg mocks base method.
-func (m *MockIPubsubService) PullMsg() error {
+func (m *MockIPubsubService) PullMsg(ctx context.Context, config models.SubscriberConfig) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PullMsg")
+	ret := m.ctrl.Call(m, "PullMsg", ctx, config)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // PullMsg indicates an expected call of PullMsg.
-func (mr *MockIPubsubServiceMockRecorder) PullMsg() *gomock.Call {
+func (mr *MockIPubsubServiceMockRecorder) PullMsg(ctx, config interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PullMsg", reflect.TypeOf((*MockIPubsubService)(nil).PullMsg))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PullMsg", reflect.TypeOf((*MockIPubsubService)(nil).PullMsg), ctx, config)
 }
